@@ -6,7 +6,6 @@ const rl = readline.createInterface({ input: input as any, output: output as any
 // 🚫 No eliminar las líneas de arriba ⬆️
 // ✍️ Escribe tu código aquí 👇
 
-// --- DÍAS 1 Y 2: Variables del sistema y Banner de bienvenida ---
 let systemName: string = 'proyectofunval';
 let version: number = 1.0;
 let userName: string = 'ivanjg';
@@ -16,7 +15,6 @@ console.log(systemName + " v " + version);
 console.log("¡Bienvenido, " + userName + "!");
 console.log("==================================");
 
-// --- DÍA 3 y 4: Interface Task, Arreglo y Contador ---
 interface Task {
     id: number;
     title: string;
@@ -26,20 +24,40 @@ interface Task {
 let tasks: Task[] = [];
 let nextId: number = 1;
 
-// --- DÍA 3: Arrow function para agregar tareas ---
-const addTask = (title: string): void => {
-    const newTask: Task = {
-        id: nextId,           
-        title: title,       
-        completed: false
-    };
-
-    tasks.push(newTask);    
-    nextId++;               
-    console.log(`Task "${title}" added successfully!`);
+const saveToDB = (task: Task): Promise<void> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log(`[Database] Task [${task.id}] "${task.title}" saved successfully on server!`);
+            resolve();
+        }, 2000); 
+    });
 };
 
-// --- DÍA 4: Nueva función markCompleted usando .find() ---
+const addTask = async (title: string): Promise<void> => {
+    try {
+                if (!title || title.trim() === "") {
+            throw new Error("Error: Task title cannot be empty.");
+        }
+
+        const newTask: Task = {
+            id: nextId,           
+            title: title.trim(),       
+            completed: false
+        };
+
+        console.log("Saving task to database...");
+        
+                await saveToDB(newTask);
+
+        tasks.push(newTask);    
+        nextId++;               
+        console.log(`Task "${newTask.title}" added to local array successfully!`);
+
+    } catch (error: any) {
+                console.log(error.message);
+    }
+};
+
 const markCompleted = (id: number): void => {
     const foundTask = tasks.find(task => task.id === id);
     
@@ -51,7 +69,6 @@ const markCompleted = (id: number): void => {
     }
 };
 
-// --- DÍA 4: Nuevas funciones de filtrado usando .filter() ---
 const filterPending = (): Task[] => {
     return tasks.filter(task => !task.completed);
 };
@@ -60,27 +77,23 @@ const filterCompleted = (): Task[] => {
     return tasks.filter(task => task.completed);
 };
 
-// --- DÍA 4: listTasks actualizado con Desestructuración, .map() y .forEach() ---
 const listTasks = (): void => {
     if (tasks.length === 0) {
         console.log("No tasks registered.");
         return;
     }
 
-    // 1. Usamos .map() para transformar el arreglo de objetos en un arreglo de strings formateados
     const formattedTasks = tasks.map(task => {
-        const { id, title, completed } = task; // Desestructuración
+        const { id, title, completed } = task;
         let status = completed ? "completed" : "pending";
         return `[${id}] ${title} - ${status}`;
     });
 
-    // 2. Usamos .forEach() para recorrer e imprimir el nuevo arreglo de strings
     formattedTasks.forEach(formattedTask => {
         console.log(formattedTask);
     });
 };
 
-// --- DÍA 3: Arrow function para eliminar tareas ---
 const removeTask = (idToRemove: number): void => {
     let indexToDelete = -1;
     for (let i = 0; i < tasks.length; i++) {
@@ -98,7 +111,6 @@ const removeTask = (idToRemove: number): void => {
     }
 };
 
-// --- DÍAS 2, 3 y 4: Menú interactivo ampliado ---
 let running: boolean = true;
 
 while (running) {
@@ -115,7 +127,7 @@ while (running) {
 
     if (option === "1") {
         let taskTitle: string = await rl.question("Enter the task title: ");
-        addTask(taskTitle);
+        await addTask(taskTitle); 
 
     } else if (option === "2") {
         let idStr: string = await rl.question("Enter the ID of the task to remove: ");
